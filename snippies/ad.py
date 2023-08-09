@@ -1,14 +1,15 @@
 from ldap3 import Server, Connection, ALL
+import os
 
 # AD Configuration
-AD_SERVER = '192.168.1.34'
-AD_USERNAME = 'service_account@woodleigh.vic.edu.au'
-AD_PASSWORD = '12345678abc!'
-DOMAIN_BASE = 'DC=woodleigh,DC=vic,DC=edu,DC=au'
+AD_SERVER = 'WDC01.woodleighschool.net'
+AD_USERNAME = os.getenv('overseas-username')
+AD_PASSWORD = os.getenv('overseas-password')
+DOMAIN_BASE = 'DC=woodleighschool,DC=net'
 
 
 def connect_to_ad():
-    server = Server(AD_SERVER, get_info=ALL)
+    server = Server(AD_SERVER, get_info=ALL, use_ssl=True)
     conn = Connection(server, user=AD_USERNAME,
                       password=AD_PASSWORD, auto_bind=True)
     return conn
@@ -32,23 +33,23 @@ def edit_ad_user(user_identifier, action):
     if action == "away":
         # add user to overseas access group
         conn.extend.microsoft.add_members_to_groups(
-            user_dn, f'CN=Allow Overseas Access,OU=Groups,{DOMAIN_BASE}')
+            user_dn, f'CN=Azure - Allow access when overseas (Travelling Users),OU=Office 365 and Azure AD,{DOMAIN_BASE}')
         # remove user from group that disables overseas access
         conn.extend.microsoft.remove_members_from_groups(
-            user_dn, f'CN=Disable Overseas Access,OU=Groups,{DOMAIN_BASE}')
+            user_dn, f'CN=Azure - Block Access to O365 if not in Australia,OU=Office 365 and Azure AD,{DOMAIN_BASE}')
         # add user to 2fa group
-        conn.extend.microsoft.remove_members_from_groups(
-            user_dn, f'CN=2FA Group,OU=Groups,{DOMAIN_BASE}')
+        conn.extend.microsoft.add_members_to_groups(
+            user_dn, f'CN=Enable Office 365 MFA,OU=Office 365 and Azure AD,{DOMAIN_BASE}')
     elif action == "home":
         # add user to group that disables overseas access
-        conn.extend.microsoft.remove_members_from_groups(
-            user_dn, f'CN=Allow Overseas Access,OU=Groups,{DOMAIN_BASE}')
-        # remove user from overseas access group
         conn.extend.microsoft.add_members_to_groups(
-            user_dn, f'CN=Disable Overseas Access,OU=Groups,{DOMAIN_BASE}')
-        if user_department != "staff":
+            user_dn, f'CN=Azure - Block Access to O365 if not in Australia,OU=Office 365 and Azure AD,{DOMAIN_BASE}')
+        # remove user from overseas access group
+        conn.extend.microsoft.remove_members_from_groups(
+            user_dn, f'CN=Azure - Allow access when overseas (Travelling Users),OU=Office 365 and Azure AD,{DOMAIN_BASE}')
+        if user_department != "Staff":
             # remove students from 2fa group
-            conn.extend.microsoft.add_members_to_groups(
-                user_dn, f'CN=2FA Group,OU=Groups,{DOMAIN_BASE}')
+            conn.extend.microsoft.remove_members_from_groups(
+                user_dn, f'CN=Enable Office 365 MFA,OU=Office 365 and Azure AD,{DOMAIN_BASE}')
 
     conn.unbind()
