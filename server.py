@@ -3,8 +3,7 @@ from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
-from snippies import ad, scheduler_config, db_config
-import sqlite3
+from snippies import ad, db, scheduler_config
 import os
 
 app = Flask(__name__)
@@ -14,22 +13,22 @@ scheduler = BackgroundScheduler(jobstores=scheduler_config.jobstores,
 scheduler.start()
 
 DATABASE = 'schedules.sqlite'
-db_config.init_db(DATABASE)
+db.init_db(DATABASE)
 
 
 def reschedule_jobs():
-    with sqlite3.connect(DATABASE) as db:
-        rows = db.execute(
-            "SELECT username, start_date, end_date FROM schedules").fetchall()
+    rows = db.get_records()
 
     for row in rows:
-        username, start_date, end_date = row
-        if datetime.strptime(start_date, "%Y-%m-%d %H:%M:%S") > datetime.now():
-            scheduler.add_job(ad.edit_ad_user, id=f"{username}_away", trigger='date', run_date=start_date, args=[
-                              username, 'away'], replace_existing=True)
-        if datetime.strptime(end_date, "%Y-%m-%d %H:%M:%S") > datetime.now():
-            scheduler.add_job(ad.edit_ad_user, id=f"{username}_home", trigger='date', run_date=end_date, args=[
-                              username, 'home'], replace_existing=True)
+        rowID, username, date, action = row
+        if action == "leaving":
+            if datetime.strptime(date, "%Y-%m-%d %H:%M:%S") > datetime.now():
+                scheduler.add_job(ad.edit_ad_user, id=f"{username}_away", trigger='date', run_date=date, args=[
+                              username, 'away', rowID], replace_existing=True)
+        elif action == "returning":
+            if datetime.strptime(date, "%Y-%m-%d %H:%M:%S") > datetime.now():
+                scheduler.add_job(ad.edit_ad_user, id=f"{username}_home", trigger='date', run_date=date, args=[
+                              username, 'home', rowID], replace_existing=True)
 
 
 reschedule_jobs()
@@ -38,7 +37,7 @@ reschedule_jobs()
 @app.route('/schedule', methods=['POST'])
 def schedule_user():
 
-    api_token = os.getenv('overseas-token')
+    api_token = os.getenv("ADAPITOKEN")
     api_key = request.headers.get('Authorization')
 
     # continue if api_key is correct
@@ -75,14 +74,13 @@ def schedule_user():
 
 
 def schedule(username, start_date, end_date):
-    with sqlite3.connect(DATABASE) as db:
-        db.execute("INSERT INTO schedules (username, start_date, end_date) VALUES (?, ?, ?)",
-                   (username, start_date, end_date))
-
+    row_id = db.add_record(username, start_date, "leaving")
     scheduler.add_job(ad.edit_ad_user, id=f"{username}_away", trigger='date', run_date=start_date, args=[
-                      username, 'away'], replace_existing=True)
+        username, 'away', row_id], replace_existing=True)
+        
+    row_id = db.add_record(username, end_date, "returning")
     scheduler.add_job(ad.edit_ad_user, id=f"{username}_home", trigger='date', run_date=end_date, args=[
-                      username, 'home'], replace_existing=True)
+        username, 'home', row_id], replace_existing=True)
 
 
 if __name__ == "__main__":

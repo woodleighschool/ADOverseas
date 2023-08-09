@@ -1,10 +1,11 @@
 from ldap3 import Server, Connection, ALL
+from snippies import db
 import os
 
 # AD Configuration
 AD_SERVER = 'WDC01.woodleighschool.net'
-AD_USERNAME = os.getenv('overseas-username')
-AD_PASSWORD = os.getenv('overseas-password')
+AD_USERNAME = os.getenv("ADUSERNAME")
+AD_PASSWORD = os.getenv("ADPASSWORD")
 DOMAIN_BASE = 'DC=woodleighschool,DC=net'
 
 
@@ -15,7 +16,7 @@ def connect_to_ad():
     return conn
 
 
-def edit_ad_user(user_identifier, action):
+def edit_ad_user(user_identifier, action, db_row):
     conn = connect_to_ad()
 
     # Search for the user using their email
@@ -53,3 +54,4 @@ def edit_ad_user(user_identifier, action):
                 user_dn, f'CN=Enable Office 365 MFA,OU=Office 365 and Azure AD,{DOMAIN_BASE}')
 
     conn.unbind()
+    db.delete_record(db_row)
