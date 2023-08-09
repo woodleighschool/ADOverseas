@@ -1,10 +1,11 @@
 from flask import Flask, request, jsonify
-import sqlite3
 from datetime import datetime
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from snippies import ad, scheduler_config, db_config
+import sqlite3
+import os
 
 app = Flask(__name__)
 scheduler = BackgroundScheduler(jobstores=scheduler_config.jobstores,
@@ -37,7 +38,7 @@ reschedule_jobs()
 @app.route('/schedule', methods=['POST'])
 def schedule_user():
 
-    api_token = "supersecrettoken"
+    api_token = os.getenv('overseas-token')
     api_key = request.headers.get('Authorization')
 
     # continue if api_key is correct
