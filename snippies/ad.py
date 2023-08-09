@@ -20,13 +20,14 @@ def edit_ad_user(user_identifier, action):
     # Search for the user using their email
     conn.search(search_base=DOMAIN_BASE,
                 search_filter=f'(sAMAccountName={user_identifier})',
-                attributes=['cn'])
+                attributes=['cn', 'department'])
 
     if not conn.entries:
         print(f"Username '{user_identifier}' not found.")
         return
 
     user_dn = conn.entries[0].entry_dn
+    user_department = conn.entries[0].department
 
     if action == "away":
         # add user to overseas access group
@@ -35,6 +36,9 @@ def edit_ad_user(user_identifier, action):
         # remove user from group that disables overseas access
         conn.extend.microsoft.remove_members_from_groups(
             user_dn, f'CN=Disable Overseas Access,OU=Groups,{DOMAIN_BASE}')
+        # add user to 2fa group
+        conn.extend.microsoft.remove_members_from_groups(
+            user_dn, f'CN=2FA Group,OU=Groups,{DOMAIN_BASE}')
     elif action == "home":
         # add user to group that disables overseas access
         conn.extend.microsoft.remove_members_from_groups(
@@ -42,5 +46,9 @@ def edit_ad_user(user_identifier, action):
         # remove user from overseas access group
         conn.extend.microsoft.add_members_to_groups(
             user_dn, f'CN=Disable Overseas Access,OU=Groups,{DOMAIN_BASE}')
+        if user_department != "staff":
+            # remove students from 2fa group
+            conn.extend.microsoft.add_members_to_groups(
+                user_dn, f'CN=2FA Group,OU=Groups,{DOMAIN_BASE}')
 
     conn.unbind()
