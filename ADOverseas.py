@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from datetime import datetime
+from datetime import datetime, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
@@ -22,11 +22,11 @@ def reschedule_jobs():
     for row in rows:
         rowID, username, date, action = row
         if action == "leaving":
-            if datetime.strptime(date, "%Y-%m-%d %H:%M:%S") > datetime.now():
+            if datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.000Z") > datetime.utcnow():
                 scheduler.add_job(ad.edit_ad_user, id=f"{username}_away", trigger='date', run_date=date, args=[
                               username, 'away', rowID], replace_existing=True)
         elif action == "returning":
-            if datetime.strptime(date, "%Y-%m-%d %H:%M:%S") > datetime.now():
+            if datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.000Z") > datetime.utcnow():
                 scheduler.add_job(ad.edit_ad_user, id=f"{username}_home", trigger='date', run_date=date, args=[
                               username, 'home', rowID], replace_existing=True)
 
@@ -36,7 +36,6 @@ reschedule_jobs()
 
 @app.route('/schedule', methods=['POST'])
 def schedule_user():
-
     api_token = os.getenv("ADAPITOKEN")
     api_key = request.headers.get('Authorization')
 
@@ -44,7 +43,8 @@ def schedule_user():
     if api_key == f'Bearer {api_token}':
         data = request.get_json()
 
-        username = data.get('username')
+        email = data.get('username')
+        username = ad.format_username(email)
         start_date_str = data.get('start_date')
         end_date_str = data.get('end_date')
 
@@ -53,13 +53,13 @@ def schedule_user():
             return jsonify({'status': 'request failed', 'reason': 'Missing Parameter'}), 400
 
         try:
-            start_date = datetime.strptime(start_date_str, "%Y-%m-%d %H:%M:%S")
-            end_date = datetime.strptime(end_date_str, "%Y-%m-%d %H:%M:%S")
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%dT%H:%M:%S.000Z")
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%dT%H:%M:%S.000Z")
         except ValueError:  # handle incorrect datetime format
             return jsonify({'status': 'request failed', 'reason': 'invalid date/time format'}), 400
 
         # check that supplied start_date is in the future
-        if start_date <= datetime.now():
+        if start_date <= datetime.utcnow():
             return jsonify({'status': 'request failed', 'reason': 'start_date cannot be in the past!'}), 400
 
         # make sure that end_date is after start_date
@@ -69,7 +69,6 @@ def schedule_user():
         # add to schedule
         schedule(username, start_date_str, end_date_str)
         return jsonify({'status': 'request succesful'})
-
     return jsonify({'status': 'request failed', 'reason': 'unauthorized'}), 401
 
 
@@ -84,4 +83,4 @@ def schedule(username, start_date, end_date):
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

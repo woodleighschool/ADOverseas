@@ -43,4 +43,6 @@ Temporary Items
 .apdisk
 
 snippies/__pycache__
+__pycache__
 *.sqlite
+.vscode

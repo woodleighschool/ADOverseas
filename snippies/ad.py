@@ -55,3 +55,7 @@ def edit_ad_user(user_identifier, action, db_row):
 
     conn.unbind()
     db.delete_record(db_row)
+
+def format_username(email):
+    username = email.split('@')[0]
+    return username
