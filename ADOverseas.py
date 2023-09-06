@@ -78,12 +78,6 @@ def schedule_user():
 			app_log.error(f"Unable to parse dates {start_date_str} and {end_date_str}")
 			return jsonify({'status': 'request failed', 'reason': 'invalid date/time format'}), 400
 
-		# check that supplied start_date is in the future
-		app_log.debug("Checking if start_date is in the past")
-		if start_date <= datetime.utcnow():
-			app_log.error(f"Start date {start_date} is in the past")
-			return jsonify({'status': 'request failed', 'reason': 'start_date cannot be in the past!'}), 400
-
 		# make sure that end_date is after start_date
 		app_log.debug("Checking if end_date is before start_date")
 		if end_date <= start_date:
