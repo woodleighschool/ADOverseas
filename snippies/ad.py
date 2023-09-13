@@ -70,7 +70,8 @@ def edit_ad_user(user_identifier, action, db_row):
 
     conn.unbind()
     app_log.debug(f"Deleting backup record in schedules.sqlite")
-    db.delete_record(db_row)
+    if db_row != None:
+        db.delete_record(db_row)
 
 def format_username(email):
     username = email.split('@')[0]
