@@ -69,8 +69,8 @@ def edit_ad_user(user_identifier, action, db_row):
                 user_dn, f'CN=Enable Office 365 MFA,OU=Office 365 and Azure AD,{DOMAIN_BASE}')
 
     conn.unbind()
-    app_log.debug(f"Deleting backup record in schedules.sqlite")
     if db_row != None:
+        app_log.debug(f"Deleting backup record in schedules.sqlite")
         db.delete_record(db_row)
 
 def format_username(email):
