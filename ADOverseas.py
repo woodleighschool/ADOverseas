@@ -95,18 +95,18 @@ def schedule_user():
 def schedule(username, start_date, end_date):
 	if start_date <= datetime.utcnow():
 		app_log.debug(f"Start date is in the past, adding {username} to group now instead")
-		scheduler.add_job(ad.edit_ad_user, id=f"{username}_away", args=[username, 'away', None], replace_existing=True)
+		scheduler.add_job(ad.edit_ad_user, id=f"{username}_away_{start_date}", args=[username, 'away', None], replace_existing=True)
 	else:
 		app_log.debug(f"Adding data for job {username}_away to schedules database in case of system shutdown")
 		row_id = db.add_record(username, start_date, "leaving")
 		app_log.debug(f"Scheduling job {username}_away")
-		scheduler.add_job(ad.edit_ad_user, id=f"{username}_away", trigger='date', run_date=start_date, timezone=timezone.utc, args=[
+		scheduler.add_job(ad.edit_ad_user, id=f"{username}_away_{start_date}", trigger='date', run_date=start_date, timezone=timezone.utc, args=[
 			username, 'away', row_id], replace_existing=True)
 		
 	app_log.debug(f"Adding data for job {username}_home to schedules database in case of system shutdown")
 	row_id = db.add_record(username, end_date, "returning")
 	app_log.debug(f"Scheduling job {username}_home")
-	scheduler.add_job(ad.edit_ad_user, id=f"{username}_home", trigger='date', run_date=end_date, timezone=timezone.utc, args=[
+	scheduler.add_job(ad.edit_ad_user, id=f"{username}_home_{end_date}", trigger='date', run_date=end_date, timezone=timezone.utc, args=[
 		username, 'home', row_id], replace_existing=True)
 
 
