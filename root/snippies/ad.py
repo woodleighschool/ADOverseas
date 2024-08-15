@@ -1,13 +1,12 @@
 from ldap3 import Server, Connection, ALL
-from snippies import db, app_log
+from snippies import db, app_log, config
 import os
 
 # AD Configuration
 AD_SERVER = 'WDC01.woodleighschool.net'
-AD_USERNAME = os.getenv("ADUSERNAME")
-AD_PASSWORD = os.getenv("ADPASSWORD")
+AD_USERNAME = config.get_item("ADUSERNAME")
+AD_PASSWORD = config.get_item("ADPASSWORD")
 DOMAIN_BASE = 'DC=woodleighschool,DC=net'
-
 
 def connect_to_ad():
     app_log.debug("Connecting to AD...")

@@ -1,9 +1,10 @@
 import logging
 import os
+from snippies import config
 
 def configure_logging():
 	FORMAT="%(asctime)s|%(levelname)s|%(name)s|%(module)s|%(funcName)s|%(message)s"
-	if os.getenv("LOGLEVEL") == "debug":
+	if config.get_item("LOGLEVEL") == "debug":
 		logging.basicConfig(filename="/var/log/ADOverseas/app.log", level=logging.DEBUG, format=FORMAT)
 	else:
 		logging.basicConfig(filename="/var/log/ADOverseas/app.log")

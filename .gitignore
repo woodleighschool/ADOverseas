@@ -46,3 +46,4 @@ snippies/__pycache__
 __pycache__
 *.sqlite
 .vscode
+config.ini

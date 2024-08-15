@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
-from snippies import ad, app_log, db, scheduler_config
+from snippies import ad, app_log, config, db, scheduler_config
+import configparser
 import os
 
 app = Flask(__name__)
@@ -14,9 +15,8 @@ scheduler.start()
 
 app_log.configure_logging()
 
-DATABASE = 'schedules.sqlite'
+DATABASE = 'persistent/schedules.sqlite'
 db.init_db(DATABASE)
-
 
 def reschedule_jobs():
 	app_log.debug("Checking for previously uncompleted jobs")
@@ -48,7 +48,7 @@ reschedule_jobs()
 
 @app.route('/schedule', methods=['POST'])
 def schedule_user():
-	api_token = os.getenv("ADAPITOKEN")
+	api_token = config.get_item("ADAPITOKEN")
 	api_key = request.headers.get('Authorization')
 
 	# continue if api_key is correct
