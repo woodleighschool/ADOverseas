@@ -1,6 +1,5 @@
 import logging
 import os
-from snippies import config
 
 
 def configure_logging():

@@ -1,5 +1,5 @@
 from ldap3 import Server, Connection, ALL
-from snippies import db, app_log, config
+from snippies import db, app_log
 import os
 
 # AD Configuration
