@@ -15,8 +15,7 @@ scheduler.start()
 
 app_log.configure_logging()
 
-DATABASE = '/config/schedules.sqlite'
-db.init_db(DATABASE)
+db.init_db()
 
 
 def reschedule_jobs():
