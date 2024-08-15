@@ -7,20 +7,16 @@ RUN \
   echo "**** install runtime packages ****" && \
   apk add --no-cache \
 	python3 \
-		python3-flask \
-		python3-datetime \
-		python3-apscheduler \
-		python3-ldap3 \
-		python3-sqlite3
+		py3-flask \
+		py3-sqlalchemy \
+		py3-apscheduler \
+		py3-ldap3 
 
 # copy local files
 COPY root/ /
 
-# Set environmental variables
-ENV FLASK_APP=ADOverseas
-
 # Execute the service
-CMD ["flask", "run", "--host", "0.0.0.0", "--port", "3500"]
+CMD ["flask", "--app", "ADOverseas", "run", "--host", "0.0.0.0", "--port", "3500"]
 
 
 
