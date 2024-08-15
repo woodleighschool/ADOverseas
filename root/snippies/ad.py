@@ -4,8 +4,8 @@ import os
 
 # AD Configuration
 AD_SERVER = 'WDC01.woodleighschool.net'
-AD_USERNAME = config.get_item("ADUSERNAME")
-AD_PASSWORD = config.get_item("ADPASSWORD")
+AD_USERNAME = config.get_credential("ADUSERNAME")
+AD_PASSWORD = config.get_credential("ADPASSWORD")
 DOMAIN_BASE = 'DC=woodleighschool,DC=net'
 
 def connect_to_ad():
