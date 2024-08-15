@@ -1,12 +1,13 @@
 from ldap3 import Server, Connection, ALL
-from snippies import db, app_log, config
+from snippies import db, app_log
 import os
 
 # AD Configuration
 AD_SERVER = 'WDC01.woodleighschool.net'
-AD_USERNAME = config.get_credential("ADUSERNAME")
-AD_PASSWORD = config.get_credential("ADPASSWORD")
+AD_USERNAME = os.getenv('AD_USERNAME', '')
+AD_PASSWORD = os.getenv('AD_PASSWORD', '')
 DOMAIN_BASE = 'DC=woodleighschool,DC=net'
+
 
 def connect_to_ad():
     app_log.debug("Connecting to AD...")
@@ -39,12 +40,12 @@ def edit_ad_user(user_identifier, action, db_row):
         # add user to overseas access group
         conn.extend.microsoft.add_members_to_groups(
             user_dn, f'CN=Azure - Allow access when overseas (Travelling Users),OU=Office 365 and Azure AD,{DOMAIN_BASE}')
-        
+
         app_log.debug(f"Removing {user_identifier} from Block Access If Not In Australia")
         # remove user from group that disables overseas access
         conn.extend.microsoft.remove_members_from_groups(
             user_dn, f'CN=Azure - Block Access to O365 if not in Australia,OU=Office 365 and Azure AD,{DOMAIN_BASE}')
-        
+
         app_log.debug(f"Adding {user_identifier} to Enable Office 365 MFA")
         # add user to 2fa group
         conn.extend.microsoft.add_members_to_groups(
@@ -54,12 +55,12 @@ def edit_ad_user(user_identifier, action, db_row):
         # add user to group that disables overseas access
         conn.extend.microsoft.add_members_to_groups(
             user_dn, f'CN=Azure - Block Access to O365 if not in Australia,OU=Office 365 and Azure AD,{DOMAIN_BASE}')
-        
+
         app_log.debug(f"Removing {user_identifier} from Allow Access When Overseas")
         # remove user from overseas access group
         conn.extend.microsoft.remove_members_from_groups(
             user_dn, f'CN=Azure - Allow access when overseas (Travelling Users),OU=Office 365 and Azure AD,{DOMAIN_BASE}')
-        
+
         app_log.debug(f"Checking if {user_identifier} is a staff member based on department: {user_department}")
         if user_department != "Staff":
             # remove students from 2fa group
@@ -71,6 +72,7 @@ def edit_ad_user(user_identifier, action, db_row):
     if db_row != None:
         app_log.debug(f"Deleting backup record in schedules.sqlite")
         db.delete_record(db_row)
+
 
 def format_username(email):
     username = email.split('@')[0]

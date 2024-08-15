@@ -1,9 +1,28 @@
 # ADOverseas
 
-Install the dependencies, and start the server with `python3 server.py`, then send a test with curl:
+Start the container with docker-compose:
 
+```yaml
+services:
+  adoverseas:
+    image: ghcr.io/woodleighschool/adoverseas
+    container_name: adoverseas
+    environment:
+      - PUID=1002
+      - PGID=1002
+      - TZ=Australia/Melbourne
+      - AD_USERNAME=
+      - AD_PASSWORD=
+      - API_TOKEN=
+    volumes:
+      - path_to_appdata/config
+    ports:
+      - 3500:3500
+    restart: unless-stopped
 ```
-curl -X POST http://localhost:5000/schedule \
+
+```bash
+curl -X POST http://localhost:3500/schedule \
      -H "Authorization: Bearer supersecrettoken" \
      -H "Content-Type: application/json" \
      -d '{
