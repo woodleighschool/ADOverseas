@@ -17,5 +17,3 @@ COPY root/ /
 
 # ports and volumes
 VOLUME /config
-
-HEALTHCHECK CMD ['curl', '-f', 'http://localhost:3500', '||', 'exit', '1']
