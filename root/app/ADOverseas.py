@@ -110,6 +110,9 @@ def schedule(username, start_date, end_date):
     scheduler.add_job(ad.edit_ad_user, id=f"{username}_home_{end_date}", trigger='date', run_date=end_date, timezone=timezone.utc, args=[
         username, 'home', row_id], replace_existing=True)
 
+@app.route('/health', methods=['GET'])
+def healthCheck():
+    return jsonify({'status': 'Success!'}), 200
 
 if __name__ == "__main__":
     app.run()
