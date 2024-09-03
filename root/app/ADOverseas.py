@@ -26,7 +26,7 @@ def reschedule_jobs():
         for row in rows:
             rowID, username, date, action = row
             if action == "leaving":
-                if datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.000Z") > datetime.utcnow():
+                if datetime.strptime(date+"+0000", "%Y-%m-%dT%H:%M:%S.000Z%z") > datetime.now(timezone.utc):
                     app_log.debug(f"Scheduling leaving job for {username} at {date}")
                     scheduler.add_job(ad.edit_ad_user, id=f"{username}_away", trigger='date', run_date=date, args=[
                         username, 'away', rowID], replace_existing=True)
@@ -34,7 +34,7 @@ def reschedule_jobs():
                     app_log.debug(f"Job for {username} is in the past, running now instead")
                     scheduler.add_job(ad.edit_ad_user, id=f"{username}_away", args=[username, 'away', rowID], replace_existing=True)
             elif action == "returning":
-                if datetime.strptime(date, "%Y-%m-%dT%H:%M:%S.000Z") > datetime.utcnow():
+                if datetime.strptime(date+"+0000", "%Y-%m-%dT%H:%M:%S.000Z%z") > datetime.now(timezone.utc):
                     app_log.debug(f"Scheduling leaving job for {username} at {date}")
                     scheduler.add_job(ad.edit_ad_user, id=f"{username}_home", trigger='date', run_date=date, args=[
                         username, 'home', rowID], replace_existing=True)
@@ -72,8 +72,8 @@ def schedule_user():
 
         app_log.debug("Attempting to parse dates to datetime object")
         try:
-            start_date = datetime.strptime(start_date_str + "UTC", "%Y-%m-%dT%H:%M:%S.000Z%Z")
-            end_date = datetime.strptime(end_date_str + "UTC", "%Y-%m-%dT%H:%M:%S.000Z%Z")
+            start_date = datetime.strptime(start_date_str + "+0000", "%Y-%m-%dT%H:%M:%S.000Z%z")
+            end_date = datetime.strptime(end_date_str + "+0000", "%Y-%m-%dT%H:%M:%S.000Z%z")
         except ValueError:  # handle incorrect datetime format
             app_log.error(f"Unable to parse dates {start_date_str} and {end_date_str}")
             return jsonify({'status': 'request failed', 'reason': 'invalid date/time format'}), 400
