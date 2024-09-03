@@ -6,6 +6,7 @@ LABEL maintainer="ozpinbeacon"
 RUN \
   echo "**** install runtime packages ****" && \
   apk add --no-cache \
+	sqlite \
     py3-apscheduler \
     py3-flask \
     py3-ldap3 \
