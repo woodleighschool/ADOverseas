@@ -72,8 +72,8 @@ def schedule_user():
 
         app_log.debug("Attempting to parse dates to datetime object")
         try:
-            start_date = datetime.strptime(start_date_str, "%Y-%m-%dT%H:%M:%S.000Z")
-            end_date = datetime.strptime(end_date_str, "%Y-%m-%dT%H:%M:%S.000Z")
+            start_date = datetime.strptime(start_date_str + "UTC", "%Y-%m-%dT%H:%M:%S.000Z%Z")
+            end_date = datetime.strptime(end_date_str + "UTC", "%Y-%m-%dT%H:%M:%S.000Z%Z")
         except ValueError:  # handle incorrect datetime format
             app_log.error(f"Unable to parse dates {start_date_str} and {end_date_str}")
             return jsonify({'status': 'request failed', 'reason': 'invalid date/time format'}), 400
