@@ -4,7 +4,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from apscheduler.executors.pool import ThreadPoolExecutor, ProcessPoolExecutor
 from snippies import ad, app_log, db, scheduler_config
-import configparser
 import os
 
 app = Flask(__name__)
