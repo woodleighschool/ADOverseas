@@ -11,7 +11,8 @@ RUN \
     py3-flask \
     py3-ldap3 \
     py3-sqlalchemy \
-    python3
+	py3-gunicorn \
+	python3
 
 # copy local files
 COPY root/ /
