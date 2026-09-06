@@ -154,7 +154,6 @@ mise run test
 mise run test-postgres
 mise run lint
 mise run fmt-check
-mise run workflow-lint
 ```
 
 PostgreSQL tests require `METABASIS_TEST_DATABASE_URL`. Tests use synthetic identities and local HTTP servers; real Graph credentials are not required.
